@@ -1,0 +1,103 @@
+#include <iostream>
+#include <stdlib.h>
+#include <cmath> //для pow
+
+using namespace std;
+
+class Vector2D
+{
+protected:
+	int x, y;
+public:
+	Vector2D(int x_v, int y_v) //конструктор 2D
+	{
+		x = x_v;
+		y = y_v;
+		cout << "ctor 2D" << endl;
+	}
+
+	virtual void printInfo(); //виртуальная функция
+
+	void length() //невиртуальная функция
+	{
+		cout << "nonvirtual func from Vector2D (base class)" << endl;
+		double len = pow((double)x*x + (double)y*y, 0.5);
+		cout << len << endl;
+		return;
+	}
+
+	virtual ~Vector2D() //виртуальный деструктор
+	{
+		cout << "dtor 2D" << endl;
+	}
+};
+
+void Vector2D::printInfo()
+{
+	cout << "virtual func from Vector2D (base class)" << endl;
+}
+
+
+
+class Vector3D : public Vector2D
+{
+public:
+	int z;
+	Vector3D(int x1, int y1, int z1) : z(z1), Vector2D(x1, y1) //конструктор 3D
+	{
+		cout << "ctor 3D" << endl;
+	}
+	void printInfo(); //виртуальная функция
+
+	void length()
+	{
+		cout << "nonvirtual func from Vector3D (derived class)" << endl;
+		double len = pow((double)x*x + (double)y*y + (double)z*z, 0.5);
+		cout << len << endl;
+		return;
+	}
+
+	~Vector3D() //деструктор
+	{
+		cout << "dtor 3D" << endl;
+	}
+};
+
+void Vector3D::printInfo()
+{
+	cout << "virtual func from Vector3D (derived class)" << endl;
+}
+
+int main()
+{
+	Vector2D* vect3d = new Vector3D(3, 4, 5);
+	Vector2D* vect2d = new Vector2D(3, 4);
+	vect2d->length(); //позовется невиртуальная ф-ция из 2D
+	vect3d->length(); //позовется невиртуальная ф-ция из 2D, несмотря на то, что вызываем через vect3d,
+	vect2d->printInfo(); //позовется виртуальная функция из 2D
+	vect3d->printInfo(); //позовется виртуальная функция из 3D
+
+	cout << "//////////////////////////////////////////////" << endl;
+	Vector3D* vect3d_ = new Vector3D(3, 4, 5);
+	Vector2D* vect2d_ = new Vector2D(3, 4);
+	vect2d_->length(); //позовется невиртуальная ф-ция из 2D (посчитается длина двухмерного вектора)
+	vect3d_->length(); //позовется невиртуальная ф-ция из 3D (посчитается длина трехмерного вектора)
+	vect2d_->printInfo(); //позовется виртуальная функция из 2D
+	vect3d_->printInfo(); //позовется виртуальная функция из 3D
+	cout << "//////////////////////////////////////////////" << endl;
+	
+	Vector3D __vect3d(3, 4, 5);
+	Vector2D *_vect2d = &__vect3d;
+	_vect2d->length(); //позовется невиртуальная ф-ция из 2D (посчитается длина двухмерного вектора)
+	__vect3d.length(); //позовется невиртуальная ф-ция из 3D (посчитается длина трехмерного вектора)
+	_vect2d->printInfo(); //позовется виртуальная функция из 3D, т.к. _vect2d указывает на объект типа Vector3D
+	__vect3d.printInfo(); //позовется виртуальная функция из 3D
+	cout << "//////////////////////////////////////////////" << endl;
+	
+	delete vect2d;
+	delete vect3d;
+	delete vect2d_;
+	delete vect3d_;
+	system("pause");
+	return 0;
+}
