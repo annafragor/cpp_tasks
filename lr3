@@ -25,18 +25,98 @@ public:
 		return len;
 	}
 
+	Vector2D operator + (const Vector2D& v1) //переопреление оператора +: будет возвращаться вектор с координатами, которые получаются суммой соотв. координат складываемых векторов
+	{
+		Vector2D vSumm = v1;
+		vSumm.x = x + v1.x;
+		vSumm.y = y + v1.y;
+		return vSumm;
+	}
+
+	Vector2D operator - (const Vector2D& v1) //переопреление оператора -: будет возвращаться вектор с координатами, которые получаются разностью соотв. координат складываемых векторов
+	{
+		Vector2D vDiff = v1;
+		vDiff.x = x - v1.x;
+		vDiff.y = y - v1.y;
+		return vDiff;
+	}
+
+	Vector2D operator - () //переопределение оператора -: будет возвращаться противоположный вектор
+	{
+		x = (-1)*x;
+		y = (-1)*y;
+		return (*this);
+	}
+
+	int operator[] (int num) //переопреление оператора обращения к элементу массива: при vector[1] будет выводиться х, при vector[2] - у
+	{
+		cerr << "operator []" << endl;
+		if (num == 1)
+		{
+			return x;
+		}
+		if (num == 2)
+		{
+			return y;
+		}
+		return 0;
+	}
+
+	double operator * (const Vector2D& v) //переопрделение оператора * (скалярное произведение)
+	{
+		double skpr = 0;
+		skpr = x*v.x + y*v.y;
+		return skpr;
+	}
+
+	char operator ==(const Vector2D v) //переопределение == (сравнение векторов)
+	{
+		double thismod = 0;
+		double vmod = 0;
+		thismod = pow(((double)x*x + (double)y*y), 0.5);
+		vmod = pow((double)v.x*v.x + (double)v.y*v.y, 0.5);
+		if (thismod > vmod) //если this > v
+		{
+			return '>';
+		}
+		else if (thismod == vmod) //если this = v
+		{
+			return '=';
+		}
+		else //если this < v
+		{
+			return '<';
+		}
+	}
+
+	friend Vector2D operator *(int a, Vector2D v); //переопреление оператора * (умножение вектора на число), определено вне класса
+	friend void printV(Vector2D); 
+
 	virtual ~Vector2D() //виртуальный деструктор
 	{
 		cerr << "dtor 2D" << endl;
 	}
 };
 
+Vector2D operator *(int a, Vector2D v) //
+{
+	Vector2D vPr = v;
+	vPr.x = v.x * a;
+	vPr.y = v.y * a;
+	return vPr;
+}
+
 void Vector2D::printInfo()
 {
 	cout << "virtual func from Vector2D (base class)" << endl;
+	return;
 }
 
-
+void printV(Vector2D v)
+{
+	cout << "x= " << v.x << " y= " << v.y << endl;
+	return;
+}
 
 class Vector3D : public Vector2D
 {
@@ -58,11 +138,101 @@ public:
 		return len;
 	}
 
+	int operator[] (int num) //переопределение []
+	{
+		cerr << "operator []" << endl;
+		if (num == 1)
+		{
+			return x;
+		}
+		if (num == 2)
+		{
+			return y;
+		}
+		if (num == 3)
+		{
+			return z;
+		}
+		return 0;
+	}
+
+	Vector3D operator + (const Vector3D& v1) //переопределение +
+	{
+		Vector3D vSumm = v1;
+		vSumm.x = x + v1.x;
+		vSumm.y = y + v1.y;
+		vSumm.z = z+ v1.z;
+		return vSumm;
+	}
+
+	Vector3D operator - (const Vector3D& v1) //переопределение - (вычитание)
+	{
+		Vector3D vDiff = v1;
+		vDiff.x = x - v1.x;
+		vDiff.y = y - v1.y;
+		vDiff.z = z - v1.z;
+		return vDiff;
+	}
+
+	Vector3D operator - ()  //переопределение - (противоположный)
+	{
+		x = (-1)*x;
+		y = (-1)*y;
+		z = (-1)*z;
+		return (*this);
+	}
+
+	Vector3D operator *(int a) //переопределение * (умножение на число)
+	//а как сделать так, чтобы работало a*vect? в данном случае работает vect*a
+	{
+		Vector3D vPr = *this;
+		vPr.x = x * a;
+		vPr.y = y * a;
+		vPr.z = z * a;
+		return vPr;
+	}
+	
+	double operator * (const Vector3D& v)
+	{
+		double skpr = 0;
+		skpr = x*v.x + y*v.y + z*v.z;
+		return skpr;
+	}
+
+	char operator ==(const Vector3D v) //переопределение == (сравнение векторов)
+	{
+		double thismod = 0;
+		double vmod = 0;
+		thismod = pow(((double)x*x + (double)y*y + (double)z*z), 0.5);
+		vmod = pow((double)v.x*v.x + (double)v.y*v.y + (double)v.z*v.z, 0.5);
+		if (thismod > vmod) //если this > v
+		{
+			return '>';
+		}
+		else if (thismod == vmod) //если this = v
+		{
+			return '=';
+		}
+		else //если this < v
+		{
+			return '<';
+		}
+	}
+
+
+	friend void printV(Vector3D);
+
 	~Vector3D() //деструктор
 	{
 		cerr << "dtor 3D" << endl;
 	}
 };
+
+void printV(Vector3D v)
+{
+	cout << "x= " << v.x << " y= " << v.y << " z= " << v.z << endl;
+	return;
+}
 
 void Vector3D::printInfo()
 {
@@ -116,8 +286,61 @@ int main()
 {
 	func1();
 	func2();
-	func3();	
+	func3();
 
+	double skalarPr = 0;
+	Vector2D v2d(3, 4); //x0, y0
+	Vector2D v2d_2(-1, 6);
+	Vector2D summ2d(0, 0);
+	Vector2D diff2d(0, 0);
+	Vector2D Av2d(0, 0);
+
+	Vector3D v3d(3, 4, 5);
+	Vector3D v3d_2(2, -7, 4);
+	Vector3D summ3d(0, 0, 0);
+	Vector3D diff3d(0, 0, 0);
+	Vector3D Av3d(0, 0, 0);
+
+	//пример переопределения * (скалярное произведение)
+	skalarPr = v2d * v2d_2;
+	cout << skalarPr << endl; //21
+	skalarPr = v3d * v3d_2;
+	cout << skalarPr << endl; //-2
+
+	//пример работы переопределения []
+	cout << v2d[1] << endl; //3
+	cout << v2d[2] << endl; //4
+	cout << v3d[2] << endl; //4
+	cout << v3d[3] << endl; //5
+
+	//пример работы переопределения +
+	summ2d = v2d + v2d_2;
+	printV(summ2d); //x=2 y=10
+	summ3d = v3d + v3d_2;
+	printV(summ3d); //x=5 y=-3 z=9
+
+	//пример работы переопределения -
+	diff2d = v2d - v2d_2;
+	printV(diff2d); //x=4 y=-2
+	diff3d = v3d - v3d_2;
+	printV(diff3d); //x=1 y=11 z=1
+
+	//пример работы переопределения * (умножение на число)
+	Av2d = 10 * v2d;
+	printV(Av2d);//x=30 y=40
+	Av3d = v3d_2 * 6;
+	printV(Av3d);//x=12 y=-42 z=24
+
+	//пример работы переопределения - (противоположный вектор)
+	Av2d = -Av2d;
+	printV(Av2d); //x=-30 y=-40
+	Av3d = -Av3d;
+	printV(Av3d); //x=-12 y=42 z=-24
+
+	//проверка работы переопределения == (сравнение векторов)
+	cout << (v2d == v2d_2) << endl; // <
+	cout << (v3d_2 == v3d_2) << endl; // =
+	
 	system("pause");
 	return 0;
 }
