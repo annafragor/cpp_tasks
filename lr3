@@ -156,7 +156,7 @@ public:
 		return 0;
 	}
 
-	Vector3D operator + (const Vector3D& v1) //переопределение +
+	Vector3D operator + (Vector3D v1) //переопределение +
 	{
 		Vector3D vSumm = v1;
 		vSumm.x = x + v1.x;
