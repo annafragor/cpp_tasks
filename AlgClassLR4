@@ -214,8 +214,7 @@ void PrintM(const MatrixZn& obj)
 }
 
 void FPrintM(const MatrixZn& obj, string filename)
-{//	f.close();//закрытие файла
-//	bool first_time = true;
+{
 	fstream f = fOpen(filename);//открыли файл
 	for (unsigned int i = 0; i < obj.n; i++)
 	{
