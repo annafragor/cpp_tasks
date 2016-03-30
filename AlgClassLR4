@@ -23,7 +23,7 @@ public:
 	{
 		c = 0;
 	}
-	Zn(int n_v) : c(n_v){};
+	Zn(int n_v) : c(n_v%5){};
 
 	Zn operator + (const Zn& obj) //сложение по модулю 5
 	{
@@ -40,11 +40,11 @@ public:
 	}
 	
 	friend void printZn(const Zn&);
-	friend void FPrintZn(fstream, Zn&);
+	friend void FPrintZn(fstream&, Zn&);
 	~Zn(){}; //деструктор
 };
 
-void FPrintZn(fstream f, Zn& obj)
+void FPrintZn(fstream& f, Zn& obj)
 {
 	f << obj.c << "  ";
 //	f.seekg(ios_base::cur);
