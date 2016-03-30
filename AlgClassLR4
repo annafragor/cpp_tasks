@@ -9,8 +9,6 @@
 using namespace std;
 
 const string FILENAME = "file.txt";
-
-
 class Error
 {
 private:
