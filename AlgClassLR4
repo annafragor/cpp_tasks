@@ -1,8 +1,3 @@
-/*элемент количества вычетов
-!конкатенация
-!умножение на элемент
-!транспонирование
-!получение по индексу*/
 #include <iostream>
 #include <fstream>
 
@@ -226,7 +221,8 @@ void FPrintM(const MatrixZn& obj, string filename)
 	{
 		for (unsigned int j = 0; j < obj.m; j++)
 		{
-			FPrintZn(f, obj.matr[i][j]);
+			FPrintZn(f, obj.matr[i][j]); //тут возникает ошибка, разрешить которую я не смогла
+			//attempting to reference a deleted function
 		}
 	}
 	return;
