@@ -47,8 +47,6 @@ public:
 void FPrintZn(fstream& f, Zn& obj)
 {
 	f << obj.c << "  ";
-//	f.seekg(ios_base::cur);
-//	int cursor = ios_base::cur;
 	return;
 }
 
