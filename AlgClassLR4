@@ -1,15 +1,20 @@
 #include <iostream>
 #include <fstream>
-
 using namespace std;
 
-const string FILENAME = "file.txt";
+const int not_a_square_matrix = 0;
+const int out_of_array = 1;
+
 class Error
 {
 private:
-	int pole;
+	int err_type;
 public:
-	Error(int i) : pole(i){};
+	Error(int i) : err_type(i) {};
+	int ErrType()
+	{
+		return err_type;
+	}
 	~Error(){};
 };
 
@@ -38,22 +43,22 @@ public:
 		result.c = (c * obj.c) % 5;
 		return result;
 	}
-	
-	friend void printZn(const Zn&);
-	friend void FPrintZn(fstream&, Zn&);
+
+	friend fstream& operator << (fstream&, Zn&);
+	friend ostream& operator << (ostream&, Zn&);
 	~Zn(){}; //деструктор
 };
 
-void FPrintZn(fstream& f, Zn& obj)
+fstream& operator << (fstream& f, Zn& obj)
 {
-	f << obj.c << "  ";
-	return;
+	f << obj.c;
+	return f;
 }
 
-void printZn(const Zn& obj)
+ostream& operator << (ostream& c, Zn& obj)
 {
-	cout << obj.c << "  ";
-	return;
+	c << obj.c;
+	return c;
 }
 
 class MatrixZn
@@ -68,6 +73,7 @@ public:
 	{
 		n = n_v;
 		m = m_v;
+		if (n != m) throw Error(not_a_square_matrix);
 		matr = new Zn*[n];
 		for (unsigned int i = 0; i < m; i++)
 		{
@@ -80,7 +86,6 @@ public:
 				matr[i][j] = matr_v[i][j];
 			}
 		}
-
 	}
 	MatrixZn(int n_v, int m_v)
 	{
@@ -105,7 +110,7 @@ public:
 		n = obj.n;
 		m = obj.m;
 		matr = new Zn*[n];
-		for (unsigned int i = 0; i < m; i++)
+		for (unsigned int i = 0; i < n; i++)
 		{
 			matr[i] = new Zn[m];
 		}
@@ -148,41 +153,36 @@ public:
 
 	MatrixZn operator | (const MatrixZn& obj) //конкатенация
 	{
-		if (n == obj.n)
+		MatrixZn mid(n, m + obj.m);
+		MatrixZn concat(mid);
+		for (unsigned int i = 0; i < n; i++)
 		{
-			MatrixZn mid(n, m + obj.m);
-			MatrixZn concat(mid);
-			for (unsigned int i = 0; i < n; i++)
+			for (unsigned int j = 0; j < m; j++)
 			{
-				for (unsigned int j = 0; j < m; j++)
-				{
-					concat.matr[i][j] = matr[i][j];
-				}
-				for (unsigned int j = 0; j < obj.m; j++)
-				{
-					concat.matr[i][j + m] = obj.matr[i][j];
-				}
+				concat.matr[i][j] = matr[i][j];
 			}
-			return concat;
+			for (unsigned int j = 0; j < obj.m; j++)
+			{
+				concat.matr[i][j + m] = obj.matr[i][j];
+			}
 		}
-		else
-		{
-			terminate();
-		}
+		return concat;
 	}
 
 	Zn & operator () (unsigned int i, unsigned int j) //получение элемента матрицы по индексу
 	{
-		if ((i <= n) && (j <= m))
+		if ((i >= n) || (j >= m))
+		{
+			throw Error(out_of_array);
+		}
+		else
 		{
 			return matr[i][j];
 		}
-		else
-			terminate();
 	}
 
-	friend void PrintM(const MatrixZn&);
-	friend void FPrintM(const MatrixZn&, string);
+	friend fstream& operator << (fstream&, MatrixZn&);
+	friend ostream& operator << (ostream& c, MatrixZn& obj);
 	friend fstream fOpen(string);
 
 	~MatrixZn()
@@ -191,50 +191,36 @@ public:
 		{
 			delete[] matr[i];
 		}
-	//	delete[] matr; - если этой строки нет - все работает, если она есть, возникает брейк на ней.
-	//я так и не поняла, как удалять двумерный массив. смотрела в интернете, и вроде на cppstudio был предложен
-	//вариант удаления массива без этой последней строчки, но потом я спросила у лектора, и он сказал, 
-	//что эта последняя строчка нужна.
+		delete[] matr;
 	}
 };
 
-void PrintM(const MatrixZn& obj)
+fstream& operator << (fstream& f, MatrixZn& obj)
 {
 	for (unsigned int i = 0; i < obj.n; i++)
 	{
 		for (unsigned int j = 0; j < obj.m; j++)
 		{
-			printZn(obj.matr[i][j]);
-			cout << "  ";
+			f << obj.matr[i][j];
+			f << "  ";
 		}
-		cout << endl;
-	}
-}
-
-void FPrintM(const MatrixZn& obj, string filename)
-{
-	fstream f = fOpen(filename);//открыли файл
-	for (unsigned int i = 0; i < obj.n; i++)
-	{
-		for (unsigned int j = 0; j < obj.m; j++)
-		{
-			FPrintZn(f, obj.matr[i][j]); //тут возникает ошибка, разрешить которую я не смогла
-			//attempting to reference a deleted function
-		}
-	}
-	return;
-}
-
-fstream fOpen(string filename)
-{
-	fstream f;
-	f.open(filename);  //открыли файл для записи и чтения
-	//файл создается в папке, где лежит main.cpp
-	if (!f.is_open()) //проверка открытия файла
-	{
-		cerr << "file couldn't be opened" << endl;
+		f << endl;
 	}
 	return f;
+}
+
+ostream& operator << (ostream& c, MatrixZn& obj)
+{
+	for (unsigned int i = 0; i < obj.n; i++)
+	{
+		for (unsigned int j = 0; j < obj.m; j++)
+		{
+			c << obj.matr[i][j];
+			c << "  ";
+		}
+		c << endl;
+	}
+	return c;
 }
 
 Zn** create_M()
@@ -244,15 +230,14 @@ Zn** create_M()
 	{
 		contrM[i] = new Zn[3];
 	}
-	contrM[0][0] = Zn(1);
-	contrM[0][1] = Zn(2);
-	contrM[0][2] = Zn(3);
-	contrM[1][0] = Zn(5);
-	contrM[1][1] = Zn(6);
-	contrM[1][2] = Zn(7);
-	contrM[2][0] = Zn(9);
-	contrM[2][1] = Zn(9);
-	contrM[2][2] = Zn(1);
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			int random_number = rand() % 10 + 1; //рандомное число в диапазоне 1..10
+			contrM[i][j] = Zn(random_number);
+		}
+	}
 	return contrM;
 }
 
@@ -263,61 +248,75 @@ Zn** create_M2()
 	{
 		contrM2[i] = new Zn[3];
 	}
-	contrM2[0][0] = Zn(1);
-	contrM2[0][1] = Zn(5);
-	contrM2[0][2] = Zn(10);
-	contrM2[1][0] = Zn(2);
-	contrM2[1][1] = Zn(8);
-	contrM2[1][2] = Zn(11);
-	contrM2[2][0] = Zn(3);
-	contrM2[2][1] = Zn(9);
-	contrM2[2][2] = Zn(12);
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			int random_number = rand() % 10 + 1;
+			contrM2[i][j] = Zn(random_number);
+		}
+	}
 	return contrM2;
 }
 
 int main()
 {
-	/*
-	поток fstream - по умолчанию открывается для ввода вывода
-	ifstream - по умолчанию для ввода
-	ofstreamи - по умолчанию для вывода
-	*/
-	Zn c1(4);
-	Zn c2(4);
-	printZn(c1 + c2);
-	cout << endl;
+	try
+	{
+		/*поток fstream - по умолчанию открывается для ввода вывода
+		ifstream - по умолчанию для ввода
+		ofstreamи - по умолчанию для вывода*/
+		Zn c1(4);
+		Zn c2(4);
+		cout << c1 + c2;
+		cout << endl;
 
-	Zn** contrM = create_M();
-	Zn** contrM2 = create_M2();
-	MatrixZn cMatrZn(contrM, 3, 3);
-	MatrixZn cMatrZn2(contrM2, 3, 3);
+		Zn** contrM = create_M();
+		Zn** contrM2 = create_M2();
+		MatrixZn cMatrZn(contrM, 3, 3);
+		MatrixZn cMatrZn2(contrM2, 3, 3);
+		//MatrixZn cMatrZn2(contrM2, 2, 3); //бросит исключение not_a_square_matrix
 
-	FPrintM(cMatrZn2, "file.txt");
+		cout << endl << "get an element from matrix" << endl;
+		//cout << cMatrZn(1, 7); //бросит исключение out_of_array
+		cout << cMatrZn(1, 1); //6
+		cout << endl;
 
-	cout << endl << "get an element from matrix" << endl;
-	printZn(cMatrZn(1, 1)); //6
-	cout << endl;
+		cout << endl << "concatention" << endl;
+		cout << "(M1) 1st matrix:" << endl;
+		cout << cMatrZn;
+		cout << "(M2) 2nd matrix:" << endl;
+		cout << cMatrZn2;
+		cout << "result" << endl;
+		MatrixZn cMatrZn3(cMatrZn | cMatrZn2);
+		cout << cMatrZn3;
+		cout << endl;
 
-	cout << endl << "concatention" << endl;
-	cout << "(M1) 1st matrix:" << endl;
-	PrintM(cMatrZn);
-	cout << "(M2) 2nd matrix:" << endl;
-	PrintM(cMatrZn2);
-	cout << "result" << endl;
-	MatrixZn cMatrZn3(cMatrZn | cMatrZn2);
-	PrintM(cMatrZn3);
-	cout << endl;
+		cout << "transposition M1" << endl;
+		MatrixZn cMatrZn4 = ~cMatrZn;
+		cout << cMatrZn4;
+		cout << endl;
 
-	cout << "transposition M1" << endl;
-	MatrixZn cMatrZn4 = ~cMatrZn;
-	PrintM(cMatrZn4);
-	cout << endl;
+		cout << "class object * matrix" << endl;
+		MatrixZn cMatrZn5 = cMatrZn * c1;
+		cout << cMatrZn5;
+		cout << endl;
 
-	cout << "class object * matrix" << endl;
-	MatrixZn cMatrZn5 = cMatrZn * c1;
-	PrintM(cMatrZn5);
-	cout << endl;
-
+		fstream f("file.txt");
+		f << cMatrZn;
+	}
+	catch (Error err)
+	{
+		switch (err.ErrType())
+		{
+		case not_a_square_matrix:
+			cerr << "Matrix must be square!!";
+			break;
+		case out_of_array:
+			cerr << "out of the array";
+			break;
+		}
+	}
 	system("pause");
 	return 0;
 }
