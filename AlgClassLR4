@@ -59,7 +59,7 @@ public:
 Zn& operator >> (fstream& f, Zn& obj)
 {
 	obj.DeleteZn();
-	f.seekg(0, ios_base::beg);
+//	f.seekg(0, ios_base::beg);
 	int r;
 	f >> r;
 	obj.c = r;
@@ -136,6 +136,17 @@ public:
 			for (unsigned int j = 0; j < m; j++)
 			{
 				matr[i][j] = obj.matr[i][j];
+			}
+		}
+	}
+
+	void DelMatr()
+	{
+		for (unsigned int i = 0; i < n; i++)
+		{
+			for (unsigned int j = 0; j < m; j++)
+			{
+				matr[i][j] = 0;
 			}
 		}
 	}
@@ -219,11 +230,12 @@ MatrixZn& operator >> (fstream& f, MatrixZn& obj)
 	f.seekg(0, ios_base::beg);
 	unsigned int col = obj.m;
 	unsigned int str = obj.n;
+	obj.DelMatr();
 	for (unsigned i = 0; i < str; i++)
 	{
 		for (unsigned int j = 0; j < col; j++)
 		{
-			f >> obj(i, j);
+			f >> obj.matr[i][j];
 			f >> c;
 			f >> c;
 		}
@@ -316,7 +328,7 @@ int main()
 
 		cout << endl << "get an element from matrix" << endl;
 		//cout << cMatrZn(1, 7); //бросит исключение out_of_array
-		cout << cMatrZn(1, 1); //6
+		cout << cMatrZn(1, 2);
 		cout << endl;
 
 		cout << endl << "concatention" << endl;
@@ -343,7 +355,7 @@ int main()
 		f << cMatrZn;
 
 		cout << "//////////////////////////////" << endl;
-		f.seekg(0, ios_base::beg);
+//		f.seekg(0, ios_base::beg);
 		cout << (f >> c2); 
 		cout << ".............." << endl;
 		cout << (f >> cMatrZn);
