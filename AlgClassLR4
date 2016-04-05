@@ -30,6 +30,12 @@ public:
 	}
 	Zn(int n_v) : c(n_v%5){};
 
+	void DeleteZn()
+	{
+		c = 0;
+		return;
+	}
+
 	Zn operator + (const Zn& obj) //сложение по модулю 5
 	{
 		Zn result = obj;
@@ -45,9 +51,20 @@ public:
 	}
 
 	friend fstream& operator << (fstream&, Zn&);
+	friend Zn& operator >> (fstream&, Zn&);
 	friend ostream& operator << (ostream&, Zn&);
 	~Zn(){}; //деструктор
 };
+
+Zn& operator >> (fstream& f, Zn& obj)
+{
+	obj.DeleteZn();
+	f.seekg(0, ios_base::beg);
+	int r;
+	f >> r;
+	obj.c = r;
+	return obj;
+}
 
 fstream& operator << (fstream& f, Zn& obj)
 {
@@ -182,6 +199,7 @@ public:
 	}
 
 	friend fstream& operator << (fstream&, MatrixZn&);
+	friend MatrixZn& operator >> (fstream&, MatrixZn&);
 	friend ostream& operator << (ostream& c, MatrixZn& obj);
 	friend fstream fOpen(string);
 
@@ -194,6 +212,25 @@ public:
 		delete[] matr;
 	}
 };
+
+MatrixZn& operator >> (fstream& f, MatrixZn& obj)
+{
+	char c = '\0';
+	f.seekg(0, ios_base::beg);
+	unsigned int col = obj.m;
+	unsigned int str = obj.n;
+	for (unsigned i = 0; i < str; i++)
+	{
+		for (unsigned int j = 0; j < col; j++)
+		{
+			f >> obj(i, j);
+			f >> c;
+			f >> c;
+		}
+		f >> c;
+	}
+	return obj;
+}
 
 fstream& operator << (fstream& f, MatrixZn& obj)
 {
@@ -302,8 +339,14 @@ int main()
 		cout << cMatrZn5;
 		cout << endl;
 
-		fstream f("file.txt");
+		fstream f("file.txt", ios_base::in | ios_base::out);
 		f << cMatrZn;
+
+		cout << "//////////////////////////////" << endl;
+		f.seekg(0, ios_base::beg);
+		cout << (f >> c2); 
+		cout << ".............." << endl;
+		cout << (f >> cMatrZn);
 	}
 	catch (Error err)
 	{
