@@ -30,12 +30,6 @@ public:
 	}
 	Zn(int n_v) : c(n_v % 5){};
 
-	void DeleteZn()
-	{
-		c = 0;
-		return;
-	}
-
 	Zn operator + (const Zn& obj) //сложение по модулю 5
 	{
 		Zn result = obj;
@@ -58,7 +52,6 @@ public:
 
 Zn& operator >> (fstream& f, Zn& obj)
 {
-	obj.DeleteZn();
 	f >> obj.c;
 	return obj;
 }
@@ -83,10 +76,10 @@ private:
 	unsigned int m; //столбцы
 
 public:
-	MatrixZn(Zn **matr_v, int n_v, int m_v)
+	MatrixZn(Zn **matr_v, int n_v, int m_v) : n(n_v), m(m_v)
 	{
-		n = n_v;
-		m = m_v;
+		//n = n_v;
+		//m = m_v;
 		if (n != m) throw Error(not_a_square_matrix);
 		matr = new Zn*[n];
 		for (unsigned int i = 0; i < m; i++)
@@ -101,10 +94,10 @@ public:
 			}
 		}
 	}
-	MatrixZn(int n_v, int m_v)
+	MatrixZn(int n_v, int m_v) : n(n_v), m(m_v)
 	{
-		n = n_v;
-		m = m_v;
+		//n = n_v;
+		//m = m_v;
 		matr = new Zn*[n];
 		for (unsigned int i = 0; i < n; i++)
 		{
@@ -137,17 +130,6 @@ public:
 		}
 	}
 
-	void DelMatr()
-	{
-		for (unsigned int i = 0; i < n; i++)
-		{
-			for (unsigned int j = 0; j < m; j++)
-			{
-				matr[i][j] = 0;
-			}
-		}
-	}
-
 	MatrixZn operator * (const Zn& obj) //умножение на объект класса Zn
 	{
 		MatrixZn result(*this);
@@ -167,8 +149,7 @@ public:
 		{
 			for (unsigned int j = i; j < m; j++)
 			{
-				Zn k;
-				k = matr[i][j];
+				Zn k(matr[i][j]);
 				matr[i][j] = matr[j][i];
 				matr[j][i] = k;
 			}
@@ -220,24 +201,18 @@ public:
 	}
 };
 
-
-
 MatrixZn& operator >> (fstream& f, MatrixZn& obj) ///////////////////////////////////////////////
 {
 	char c = '\0';
 	f.seekg(0, ios_base::beg);
 	unsigned int col = obj.m;
 	unsigned int str = obj.n;
-	obj.DelMatr();
 	for (unsigned i = 0; i < str; i++)
 	{
 		for (unsigned int j = 0; j < col; j++)
 		{
 			f >> obj.matr[i][j];
-			//f >> c;
-			//f >> c;
 		}
-		//f >> c;
 	}
 	return obj;
 }
@@ -281,8 +256,7 @@ Zn** create_M()
 	{
 		for (int j = 0; j < 3; j++)
 		{
-			int random_number = rand() % 10 + 1; //рандомное число в диапазоне 1..10
-			contrM[i][j] = Zn(random_number);
+			contrM[i][j] = Zn(rand() % 10 + 1);
 		}
 	}
 	return contrM;
@@ -299,8 +273,7 @@ Zn** create_M2()
 	{
 		for (int j = 0; j < 3; j++)
 		{
-			int random_number = rand() % 10 + 1;
-			contrM2[i][j] = Zn(random_number);
+			contrM2[i][j] = Zn(rand() % 10 + 1);
 		}
 	}
 	return contrM2;
