@@ -1,3 +1,5 @@
+https://compscicenter.ru/media/slides/cpp_2_2014_spring/2014_02_11_cpp_2_2014_spring.pdf
+
 #include <iostream>
 #include <fstream>
 using namespace std;
