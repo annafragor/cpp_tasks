@@ -1,0 +1,215 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <memory>
+#include <algorithm>
+using namespace std;
+//directory - создание файла
+//dynamin_poinnter_cast ???
+
+class Directory;
+
+class File
+{
+	string name;
+	//плюс содержимое
+public:
+	File(){};
+	File(string name_v) : name(name_v){};
+	friend Directory;
+	~File(){};
+};
+
+class Directory
+{
+	string name;
+	Directory* dirs[256]; //массив указателей на директории из данной директории
+	File* files[256]; //массив указателей на файлы в этой директории
+public:
+	Directory(){};
+	Directory(string name_v) : name(name_v){/*, dirs{ 0 }, files{0} так нельзя обнулить массив*/
+		for (int i = 0; i < 256; i++)
+		{
+			dirs[i] = nullptr;
+		}
+		for (int i = 0; i < 256; i++)
+		{
+			files[i] = nullptr;
+		}
+	}
+	//Directory(const Directory& obj) //конструктор копирования
+	//{
+	//	name = obj.name;
+	//	for (int i = 0; i < 256; i++)
+	//	{
+	//		dirs[i] = nullptr;
+	//	}
+	//	for (int i = 0; i < 256; i++)
+	//	{
+	//		files[i] = nullptr;
+	//	}
+	//}
+	Directory* createDirectory(string name_v)
+	{//создает новую диркеторию внутри текущей
+		int i = 0;
+		while (dirs[i] != nullptr)
+		{
+			i++;
+		}
+		if (i == 256)
+			throw; //тут будет исключение
+		else
+			dirs[i] = new Directory(name_v);;
+		return dirs[i];
+	}
+	File* createFile(string name_v)
+	{
+		int i = 0;
+		File* obj = new File(name_v);
+		while (files[i] != nullptr)
+		{
+			i++;
+		}
+		if (i == 256)
+			throw; //тут будет исключение
+		else
+			files[i] = obj;
+		return obj;
+	}
+	void deleteDirectory(string name_v)
+	{//удаляет указанную диркеторию внутри текущей
+		int i = 0;
+		while (dirs[i]->name != name_v)
+		{
+			i++;
+		}
+		delete dirs[i];
+		dirs[i] = 0;
+	}
+	void deleteFile(string name_v)
+	{//удаляет указанный файл внутри текущей директории
+		int i = 0;
+		while (files[i]->name != name_v)
+		{
+			i++;
+		}
+		delete files[i];
+		files[i] = 0;
+	}
+	bool findFileInDirectory(string name_v)
+	{//наxодит указанный файл внутри текущей директории, не заходя в лежащие в ней директории
+		for (int i = 0; i < filesNum(); i++)
+		{
+			if (files[i]->name == name_v)
+				return true;
+		}
+	}
+	bool findDirectoryInDirectory(string name_v)
+	{//наxодит указанную директорию внутри текущей, не заходя в лежащие в ней директории
+		for (int i = 0; i < dirsNum(); i++)
+		{
+			if (dirs[i]->name == name_v)
+				return true;
+		}
+	}
+	int dirsNum()
+	{//ищем количество директорий в текущей
+		int num = 0;
+		for (int i = 0; i < 256; i++)
+		{
+			if (dirs[i] != nullptr)
+				num++;
+		}
+		return num;
+	}
+	int filesNum()
+	{//ищем количество файлов в текущей директории
+		int num = 0;
+		for (int i = 0; i < 256; i++)
+		{
+			if (files[i] != nullptr)
+				num++;
+		}
+		return num;
+	}
+	friend void findFile(string name_v, Directory& root, string path)
+	{//ищем файл по всему дереву
+		string sl = "/";
+		path = path + root.name + sl;
+		if (root.findFileInDirectory(name_v) == true)
+		{
+			cout << endl << path + sl + name_v;
+		}
+		if (root.dirsNum() != 0)
+		{
+			for (int i = 0; i < root.dirsNum(); i++)
+			{
+				findFile(name_v, *(root.dirs[i]), path);
+			}
+		}
+	}
+
+
+	friend void deleteFileWithAddress(string adr)
+	{
+
+	}
+	void printDirectory()
+	{
+		cout << "contents of " << name << endl;
+		cout << "directories:" << endl;
+		for (int i = 0; i < 256; i++)
+		{
+			if (dirs[i] != nullptr)
+				cout << dirs[i]->name << endl;
+		}
+		cout << "files:" << endl;
+		for (int i = 0; i < 256; i++)
+		{
+			if (files[i] != nullptr)
+				cout << files[i]->name << endl;
+		}
+	}
+
+	~Directory()
+	{
+		for (int i = 0; i < sizeof(dirs) / sizeof(dirs[0]); i++)
+		{
+			delete dirs[i];
+		}
+		for (int i = 0; i < sizeof(files) / sizeof(files[0]); i++)
+		{
+			delete files[i];
+		}
+	}
+};
+
+int main()
+{
+	//	vector<vector <int*>> treeArr;
+	Directory root("root");
+	Directory* dir1 = root.createDirectory("dir1");
+	Directory* dir2 = root.createDirectory("dir2");
+	File* file1 = dir1->createFile("file1");
+	File* file2 = dir1->createFile("file2");
+	File* file4 = dir2->createFile("file1");
+	File* file3 = dir2->createFile("file3");
+	Directory* dir3 = dir2->createDirectory("dir3");
+
+
+	dir1->printDirectory();
+	//root.deleteDirectory("dir1");
+	root.printDirectory();
+	dir1->deleteFile("file2");
+	dir1->printDirectory();
+//	root.findFile((string)"file1", "0");
+	cout << root.dirsNum();
+	cout << endl << "///////////////" << endl;
+	dir1->printDirectory();
+	cout << endl << dir1->findFileInDirectory("file1") << endl;
+	cout << endl << "///////////////" << endl;
+	findFile("file3", root, "");
+
+	system("pause");
+	return 0;
+}
