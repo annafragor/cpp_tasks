@@ -46,7 +46,7 @@ class File
 public:
 	File() : onlyForAdmin(false), isOpened(false){};
 	File(string name_v) : name(name_v), onlyForAdmin(false), isOpened(false){};
-	
+
 	void chmod(bool makeProtected)
 	{//установка прав доступа на файл
 		if (makeProtected == true)
@@ -122,7 +122,7 @@ public:
 		else
 			dirs[i] = new Directory(name_v);;
 		return dirs[i];
-	} 
+	}
 	File* createFile(string name_v) //create
 	{
 		int i = 0;
@@ -136,7 +136,7 @@ public:
 		else
 			files[i] = obj;
 		return obj;
-	} 
+	}
 	void deleteDirectory(string name_v)
 	{//удаляет указанную диркеторию внутри текущей
 		int i = 0;
@@ -166,13 +166,13 @@ public:
 		else
 		{
 			delete files[i];
-				files[i] = 0;
+			files[i] = 0;
 		}
 	}
 	void printWholeDirectory() //list
 	{
 		cout << "contents of " << name << endl;
-		cout << "directories of "<< name <<":" << endl;
+		cout << "directories of " << name << ":" << endl;
 		for (int i = 0; i < 256; i++)
 		{
 			if (dirs[i] != nullptr)
@@ -181,7 +181,7 @@ public:
 				dirs[i]->printWholeDirectory();
 			}
 		}
-		cout << "files of " <<name << ":"<< endl;
+		cout << "files of " << name << ":" << endl;
 		for (int i = 0; i < 256; i++)
 		{
 			if (files[i] != nullptr)
@@ -293,7 +293,7 @@ public:
 	}
 };
 
-void findFile(string name_v, Directory* root, string path) 
+void findFile(string name_v, Directory* root, string path)
 {//ищем файл по всему дереву
 	path = path + root->name + "/";
 	if (root->ifFileInDirectory(name_v) == true)
@@ -352,7 +352,7 @@ void deleteWithAddres(Directory* root, string adr)
 	//(n-1) - количество директорий
 	cout << names[n - 1];
 
-	for (int i = 1; i < n-1; i++)
+	for (int i = 1; i < n - 1; i++)
 	{
 		if (root->ifDirectoryInDirectory(names[i]) == true)
 		{
@@ -368,48 +368,13 @@ void deleteWithAddres(Directory* root, string adr)
 			cerr << "wrong path" << endl;
 		}
 	}
-	root->deleteFile(names[n-1], false);
+	root->deleteFile(names[n - 1], false);
 	delete[] names;
 }
 
 
 int main()
 {
-	//Directory* dir1 = root->createDirectory("dir1");
-	//Directory* dir2 = root->createDirectory("dir2");
-	//File* file1 = dir1->createFile("file1");
-	//File* file2 = dir1->createFile("file2");
-	//File* file7 = dir1->createFile("file3");
-	//File* file3 = dir2->createFile("file3");
-	//File* file4 = dir2->createFile("file1");
-	//Directory* dir3 = dir2->createDirectory("dir3");
-	//Directory* dir4 = dir2->createDirectory("dir4");
-	//File* file5 = dir4->createFile("file1");
-	//File* file6 = dir4->createFile("file4");
-	//Directory* dir5 = dir4->createDirectory("dir5");
-	//File* file8 = dir5->createFile("file8");
-	//
-	//file2->chmod(true);
-	//dir1->deleteFile("file2");
-	//cout << endl << endl << "printWholeDirectory" << endl;
-	//dir2->printWholeDirectory();
-	//cout << endl << endl;
-	//cout << root->dirsNum();
-	//cout << endl << "///////////////" << endl;
-	////file1->opCl(true);
-	//dir1->deleteFile("file1");
-	////file1->opCl(false);
-	////dir1->deleteFile("file1");
-	////dir1->printWholeDirectory();
-	//cout << endl << "///////////////" << endl;
-	//findFile("file1", root, "");
-	//cout << "/////////////////////////" << endl;
-	//dir2->deleteDirectory("dir3");
-	//cout << endl << endl << "printWholeDirectory" << endl;
-	//dir2->printWholeDirectory();
-	//cout << endl << endl;
-	//deleteWithAddres(root, "root/dir2/dir4/dir5/file8");
-	//dir5->printWholeDirectory();
 	string str;
 	string command = "";
 	string adr;
@@ -417,7 +382,7 @@ int main()
 	Directory* thisDir = root;
 	bool isProtectedNow = false;
 	cout << "This is emulation of file system." << endl << "You are now in 'root'" << endl;
-	
+
 	//map <string, int> mapping;
 	//mapping["mkdir"] = MKDIR;
 	//mapping["mkfile"] = MKFILE;
@@ -444,88 +409,104 @@ int main()
 		{
 			cin >> adr;
 			thisDir->createDirectory(adr);
-		}else
+		}
+		else
 		if (command == "mkfile") //создание файла
 		{
 			cin >> adr;
 			thisDir->createFile(adr);
-		}else
+		}
+		else
 		if (command == "tree") //вывод всего дерева
 		{
 			root->printWholeDirectory();
-		}else
+		}
+		else
 		if (command == "chmod") //сделать доступным только администратору
 		{
 			cin >> adr;
 			if (isProtectedNow == false)
 			{
-			(thisDir->returnFile(adr))->chmod(true);
+				(thisDir->returnFile(adr))->chmod(true);
 				isProtectedNow = true;
 			}
 			else{
 				(thisDir->returnFile(adr))->chmod(false);
 				isProtectedNow = false;
 			}
-		}else
+		}
+		else
 		if (command == "rm") //удаление по адресу
 		{
 			cin >> adr;
 			deleteWithAddres(root, adr);
-		}else
+		}
+		else
 		if (command == "rm_r") //удаление директории со всем содержимым, внутри текущей директории
 		{
 			cin >> adr;
 			thisDir->deleteDirectory(adr);
-		}else 
+		}
+		else
 		if (command == "su_rm") //удаление файла несмотря на администраторские права
 		{
 			cin >> adr;
 			thisDir->deleteFile(adr, true);
-		}else 
+		}
+		else
 		if (command == "cd") //перемещение вниз по дереву
 		{
 			cin >> adr;
 			thisDir = thisDir->goToDir(adr);
-		}else 
+		}
+		else
 		if (command == "pwd") //показать текущую директорию
 		{
 			thisDir->printDirectory();
-		}else 
+		}
+		else
 		if (command == "list")
 		{
 			thisDir->printWholeDirectory();
-		}else
+		}
+		else
 		if (command == "open")
 		{
 			cin >> adr;
 			(thisDir->returnFile(adr))->opCl(true);
-		}else
+		}
+		else
 		if (command == "close")
 		{
 			cin >> adr;
 			(thisDir->returnFile(adr))->opCl(false);
-		}else
+		}
+		else
 		if (command == "write")
 		{
 			string name;
 			cin >> name;
 			cin >> adr;
 			(thisDir->returnFile(name))->writeInFile(adr);
-		}else 
+		}
+		else
 		if (command == "clfile")
 		{
 			cin >> adr;
 			(thisDir->returnFile(adr))->cleanFile();
-		}else 
+		}
+		else
 		if (command == "read")
 		{
 			cin >> adr;
 			(thisDir->returnFile(adr))->printFile();
-		}else 
+		}
+		else
 		if (command == "clc")
 		{
 			system("cls");
-		}else 
+		}
+		else
 		if (command == "find") //ищем файл в текущей директории
 		{
 			cin >> adr;
@@ -533,12 +514,14 @@ int main()
 				cout << "this file doesn't exist in this directory" << endl;
 			else
 				cout << "there is your file in this directory" << endl;
-		}else 
+		}
+		else
 		if (command == "find_r") //ищем файла во всем дереве
 		{
 			cin >> adr;
 			findFile(adr, root, "");
-		}else
+		}
+		else
 		if (command == "root")
 		{
 			thisDir = root;
