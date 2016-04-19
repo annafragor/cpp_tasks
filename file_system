@@ -1,11 +1,37 @@
 #include <iostream>
 #include <string>
 #include <map>
-
+//#include <vector>
+//#include <memory>
+//#include <algorithm>
 using namespace std;
-
+//dynamin_poinnter_cast ???
+//vector <string> namesIOfDirs;
 class Directory;
 class File;
+
+//class Label
+//{
+//	string name;
+//	File* ptrF;
+//	Directory* ptrD;
+//	bool pointToFile;
+//public:
+//	Label(File* file_v) : pointToFile(true), ptrD(nullptr)
+//	{
+//		ptrF = file_v;
+//		name = file_v->name;
+//	}
+//	Label(Directory* dir_v) : pointToFile(false), ptrF(nullptr)
+//	{
+//		ptrD = dir_v;
+//		name = dir_v->name;
+//	}
+//
+//	friend Directory;
+//	friend File;
+//	~Label(){};
+//};
 
 class File
 {
@@ -59,6 +85,7 @@ public:
 		return;
 	}
 	friend Directory;
+	//friend Label;
 	~File(){};
 };
 
@@ -93,6 +120,7 @@ class Directory
 	string name;
 	Directory* dirs[256]; //массив указателей на директории из данной директории
 	File* files[256]; //массив указателей на файлы в этой директории
+//	Label* lbls[256];
 public:
 	Directory(){};
 	Directory(string name_v) : name(name_v){/*, dirs{ 0 }, files{0} так нельзя обнулить массив*/
@@ -289,6 +317,7 @@ public:
 	friend string* breakToWords(string, char);
 	friend void deleteWithAddres(Directory*, string);
 	friend File;
+//	friend Label;
 	~Directory()
 	{
 		for (int i = 0; i < sizeof(dirs) / sizeof(dirs[0]); i++)
@@ -508,8 +537,15 @@ int main()
 			case 19:
 				for (int i = 0; i < 256; i++)
 				{
-					root->deleteDirectory(root->objName(i, 1));
-					root->deleteFile(root->objName(i, 0), true);
+					cout << root->objName(i, 1);
+					if (root->goToDir(root->objName(i, 1)))
+					{
+						root->deleteDirectory(root->objName(i, 1));
+					}
+					if (root->returnFile(root->objName(i, 0)))
+					{
+						root->deleteFile(root->objName(i, 0), true);
+					}
 				}
 				delete root;
 				return 0;
