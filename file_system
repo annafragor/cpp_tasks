@@ -9,29 +9,8 @@ using namespace std;
 //vector <string> namesIOfDirs;
 class Directory;
 class File;
+class Label;
 
-//class Label
-//{
-//	string name;
-//	File* ptrF;
-//	Directory* ptrD;
-//	bool pointToFile;
-//public:
-//	Label(File* file_v) : pointToFile(true), ptrD(nullptr)
-//	{
-//		ptrF = file_v;
-//		name = file_v->name;
-//	}
-//	Label(Directory* dir_v) : pointToFile(false), ptrF(nullptr)
-//	{
-//		ptrD = dir_v;
-//		name = dir_v->name;
-//	}
-//
-//	friend Directory;
-//	friend File;
-//	~Label(){};
-//};
 
 class File
 {
@@ -85,7 +64,7 @@ public:
 		return;
 	}
 	friend Directory;
-	//friend Label;
+	friend Label;
 	~File(){};
 };
 
@@ -112,6 +91,17 @@ public:
 	}
 	~FileWork(){};
 };
+class LableWork
+{
+	char k;
+public:
+	LableWork(char k_v) : k(k_v){};
+	char errType() const
+	{
+		return k;
+	}
+	~LableWork(){};
+};
 
 
 
@@ -120,7 +110,7 @@ class Directory
 	string name;
 	Directory* dirs[256]; //массив указателей на директории из данной директории
 	File* files[256]; //массив указателей на файлы в этой директории
-//	Label* lbls[256];
+	Label* lbls[256];
 public:
 	Directory(){};
 	Directory(string name_v) : name(name_v){/*, dirs{ 0 }, files{0} так нельзя обнулить массив*/
@@ -164,6 +154,22 @@ public:
 		else
 			files[i] = obj;
 		return obj;
+	}
+	Label* createFLabel(File* obj)
+	{
+		int i = 0;
+		if (ifLableInDirectory(obj) == true)
+			throw Name('l');//ok
+		Label* newlbl = new Label(obj);
+		while (lbls[i] != nullptr)
+		{
+			i++;
+		}
+		if (i == 256)
+			throw LableWork('o');
+		else
+			lbls[i] = newlbl;
+		return newlbl;
 	}
 	void deleteDirectory(string name_v)
 	{//удаляет указанную диркеторию внутри текущей
@@ -230,6 +236,15 @@ public:
 		}
 
 	}
+	bool ifLableInDirectory(File* obj)/////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!/////////////////////////////////////
+	{
+		for (int i = 0; i < lblsNum(); i++)
+		{
+			if (lbls[i] && lbls[i]->ptrF == obj)
+				return true;
+		}
+		return false;
+	}
 	bool ifFileInDirectory(string name_v)
 	{//наxодит указанный файл внутри текущей директории, не заходя в лежащие в ней директории
 		for (int i = 0; i < filesNum(); i++)
@@ -254,7 +269,7 @@ public:
 		{
 			for (int i = 0; i < dirsNum(); i++)
 			{
-				if (dirs[i]->name == name_v)
+				if (dirs[i] && dirs[i]->name == name_v)
 					return dirs[i];
 			}
 		}
@@ -280,6 +295,16 @@ public:
 		for (int i = 0; i < 256; i++)
 		{
 			if (files[i] != nullptr)
+				num++;
+		}
+		return num;
+	}
+	int lblsNum()
+	{
+		int num = 0;
+		for (int i = 0; i < 256; i++)
+		{
+			if (lbls[i] != nullptr)
 				num++;
 		}
 		return num;
@@ -317,7 +342,7 @@ public:
 	friend string* breakToWords(string, char);
 	friend void deleteWithAddres(Directory*, string);
 	friend File;
-//	friend Label;
+	friend Label;
 	~Directory()
 	{
 		for (int i = 0; i < sizeof(dirs) / sizeof(dirs[0]); i++)
@@ -410,6 +435,34 @@ void deleteWithAddres(Directory* root, string adr)
 	delete[] names;
 }
 
+class Label
+{
+	string name;
+	File* ptrF;
+	Directory* ptrD;
+	bool pointToFile;
+public:
+	Label(){};
+	Label(File* file_v): pointToFile(true), ptrD(nullptr)
+	{
+		ptrF = file_v;
+		name = file_v->name;
+	}
+	Label(Directory* dir_v): pointToFile(false), ptrF(nullptr)
+	{
+		ptrD = dir_v;
+		name = dir_v->name;
+	}
+	void printlbl()
+	{
+		cout << name << " " << ptrF->name << endl;
+		return;
+	}
+	friend Directory;
+	friend File;
+	~Label(){};
+};
+
 
 int main()
 {
@@ -418,9 +471,17 @@ int main()
 	string adr;
 	string name;
 	Directory* root = new Directory("root");
+	File* f1 = root->createFile("file1");
+	File* f2 = root->createFile("file2");
+
 	Directory* thisDir = root;
 	bool isProtectedNow = false;
 	cout << "This is emulation of file system." << endl << "You are now in 'root'" << endl;
+	Label* l = root->createFLabel(f1);
+	l->printlbl();
+	cout << root->ifLableInDirectory(f1);
+	cout << root->ifLableInDirectory(f2);
+
 
 	map <string, int> mapping;
 	mapping["mkdir"] = 0;
@@ -535,19 +596,19 @@ int main()
 				thisDir = root;
 				break;
 			case 19:
-				for (int i = 0; i < 256; i++)
-				{
-					cout << root->objName(i, 1);
-					if (root->goToDir(root->objName(i, 1)))
-					{
-						root->deleteDirectory(root->objName(i, 1));
-					}
-					if (root->returnFile(root->objName(i, 0)))
-					{
-						root->deleteFile(root->objName(i, 0), true);
-					}
-				}
-				delete root;
+				//for (int i = 0; i < 256; i++)
+				//{
+				//	cout << root->objName(i, 1);
+				//	if (root->goToDir(root->objName(i, 1)))
+				//	{
+				//		root->deleteDirectory(root->objName(i, 1));
+				//	}
+				//	if (root->returnFile(root->objName(i, 0)))
+				//	{
+				//		root->deleteFile(root->objName(i, 0), true);
+				//	}
+				//}
+				//delete root;
 				return 0;
 				break;
 			default:
@@ -567,6 +628,9 @@ int main()
 				break;
 			case 'n':
 				cerr << "no dir with such name in this directory" << endl;
+				break;
+			case 'l':
+				cerr << "the same label already exists in this diretory." << endl;
 				break;
 			}
 		}
@@ -588,6 +652,15 @@ int main()
 				break;
 			case 'n':
 				cerr << "no file with such name in this directory" << endl;
+				break;
+			}
+		}
+		catch (const LableWork& err)
+		{
+			switch (err.errType())
+			{
+			case 'o':
+				cerr << "Can't create more labels. Directory is full." << endl;
 				break;
 			}
 		}
