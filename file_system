@@ -10,25 +10,21 @@ using namespace std;
 class Directory;
 class File;
 
-//#define MKDIR 0;
-//#define MKFILE 1;
-//#define TREE 2;
-
 //class Label
 //{
 //	string name;
-//	File* f;
-//	Directory* d;
+//	File* ptrF;
+//	Directory* ptrD;
 //	bool pointToFile;
 //public:
-//	Label(File* file_v) : pointToFile(true), d(nullptr)
+//	Label(File* file_v) : pointToFile(true), ptrD(nullptr)
 //	{
-//		f = file_v;
+//		ptrF = file_v;
 //		name = file_v->name;
 //	}
-//	Label(Directory* dir_v) : pointToFile(false), f(nullptr)
+//	Label(Directory* dir_v) : pointToFile(false), ptrF(nullptr)
 //	{
-//		d = dir_v;
+//		ptrD = dir_v;
 //		name = dir_v->name;
 //	}
 //
@@ -89,14 +85,42 @@ public:
 		return;
 	}
 	friend Directory;
+	//friend Label;
 	~File(){};
 };
+
+class Name
+{
+	char k;
+public:
+	Name(char k_v): k(k_v){};
+	char errType() const
+	{
+		return k;
+	}
+	~Name(){};
+};
+
+class FileWork
+{
+	char k;
+public:
+	FileWork(char k_v) : k(k_v){};
+	char errType() const
+	{
+		return k;
+	}
+	~FileWork(){};
+};
+
+
 
 class Directory
 {
 	string name;
 	Directory* dirs[256]; //массив указателей на директории из данной директории
 	File* files[256]; //массив указателей на файлы в этой директории
+//	Label* lbls[256];
 public:
 	Directory(){};
 	Directory(string name_v) : name(name_v){/*, dirs{ 0 }, files{0} так нельзя обнулить массив*/
@@ -113,12 +137,14 @@ public:
 	Directory* createDirectory(string name_v)//create
 	{//создает новую диркеторию внутри текущей
 		int i = 0;
+		if (ifDirectoryInDirectory(name_v) == true)
+			throw Name('d');//ok
 		while (dirs[i] != nullptr)
 		{
 			i++;
 		}
 		if (i == 256)
-			throw; //тут будет исключение
+			throw FileWork('o');//ok
 		else
 			dirs[i] = new Directory(name_v);;
 		return dirs[i];
@@ -126,13 +152,15 @@ public:
 	File* createFile(string name_v) //create
 	{
 		int i = 0;
+		if (ifFileInDirectory(name_v) == true)
+			throw Name('f');//ok
 		File* obj = new File(name_v);
 		while (files[i] != nullptr)
 		{
 			i++;
 		}
 		if (i == 256)
-			throw; //тут будет исключение
+			throw FileWork('O'); //ok
 		else
 			files[i] = obj;
 		return obj;
@@ -155,22 +183,17 @@ public:
 			i++;
 		}
 		if ((files[i]->onlyForAdmin == true) && (suprm == false))
-		{
-			cerr << "for deleting this file, you should have administration rights" << endl;
-			//здесь будет исключение
-		}
+			throw FileWork('d');//ok
 		else if (files[i]->isOpened == true)
-		{
-			cerr << "can't delete this file, cause it's still opened" << endl;
-		}
+			throw FileWork('p');//ok
 		else
 		{
 			delete files[i];
 			files[i] = 0;
 		}
 	}
-	void printWholeDirectory() //list
-	{
+	void printWholeDirectory() 
+	{//list
 		cout << "contents of " << name << endl;
 		cout << "directories of " << name << ":" << endl;
 		for (int i = 0; i < 256; i++)
@@ -214,6 +237,7 @@ public:
 			if (files[i] && files[i]->name == name_v)
 				return true;
 		}
+		return false;
 	}
 	bool ifDirectoryInDirectory(string name_v)
 	{//наxодит указанную директорию внутри текущей, не заходя в лежащие в ней директории
@@ -222,6 +246,7 @@ public:
 			if (dirs[i] && dirs[i]->name == name_v)
 				return true;
 		}
+		return false;
 	}
 	Directory* goToDir(string name_v)
 	{
@@ -235,7 +260,7 @@ public:
 		}
 		else
 		{
-			cerr << "no dir with such name in this directory" << endl;
+			throw Name('n');//ok
 			return NULL;
 		}
 	}
@@ -259,6 +284,18 @@ public:
 		}
 		return num;
 	}
+	string objName(int i, int obj)
+	{
+		switch (obj)
+		{
+		case 0://file
+			return files[i]->name;
+			break;
+		case 1://directory
+			return dirs[i]->name;
+			break;
+		}
+	}
 	File* returnFile(string adr)
 	{
 		if (ifFileInDirectory(adr) == true)
@@ -271,7 +308,7 @@ public:
 		}
 		else
 		{
-			cerr << "no file with such name in this directory" << endl;
+			throw FileWork('n');//ok
 			return NULL;
 		}
 	}
@@ -280,6 +317,7 @@ public:
 	friend string* breakToWords(string, char);
 	friend void deleteWithAddres(Directory*, string);
 	friend File;
+//	friend Label;
 	~Directory()
 	{
 		for (int i = 0; i < sizeof(dirs) / sizeof(dirs[0]); i++)
@@ -378,153 +416,173 @@ int main()
 	string str;
 	string command = "";
 	string adr;
+	string name;
 	Directory* root = new Directory("root");
 	Directory* thisDir = root;
 	bool isProtectedNow = false;
 	cout << "This is emulation of file system." << endl << "You are now in 'root'" << endl;
 
-	//map <string, int> mapping;
-	//mapping["mkdir"] = MKDIR;
-	//mapping["mkfile"] = MKFILE;
-	//mapping["tree"] = TREE;
-	//while (command != "finish")
-	//{
-	//	cin >> command;
-	//	switch (mapping[command]) 
-	//	{
-	//	case MKDIR:
-	//		cin >> adr;
-	//		thisDir->createDirectory(adr);
-	//		break;
-	//	case MKFILE:
-	//		cin >> adr;
-	//		thisDir->createFile(adr);
-	//		break;
-	//	}
-	//}
+	map <string, int> mapping;
+	mapping["mkdir"] = 0;
+	mapping["mkfile"] = 1;
+	mapping["tree"] = 2;
+	mapping["chmod"] = 3;
+	mapping["rm"] = 4;
+	mapping["rm_r"] = 5;
+	mapping["su_rm"] = 6;
+	mapping["cd"] = 7;
+	mapping["pwd"] = 8;
+	mapping["list"] = 9;
+	mapping["open"] = 10;
+	mapping["close"] = 11;
+	mapping["write"] = 12;
+	mapping["clfile"] = 13;
+	mapping["read"] = 14;
+	mapping["clc"] = 15;
+	mapping["find"] = 16;
+	mapping["find_r"] = 17;
+	mapping["root"] = 18;
+	mapping["finish"] = 19;
+
 	while (command != "finish")
 	{
-		cin >> command;
-		if (command == "mkdir") //создание директории
+		try
 		{
-			cin >> adr;
-			thisDir->createDirectory(adr);
-		}
-		else
-		if (command == "mkfile") //создание файла
-		{
-			cin >> adr;
-			thisDir->createFile(adr);
-		}
-		else
-		if (command == "tree") //вывод всего дерева
-		{
-			root->printWholeDirectory();
-		}
-		else
-		if (command == "chmod") //сделать доступным только администратору
-		{
-			cin >> adr;
-			if (isProtectedNow == false)
+			cin >> command;
+			switch (mapping[command])
 			{
-				(thisDir->returnFile(adr))->chmod(true);
-				isProtectedNow = true;
+			case 0:
+				cin >> adr;
+				thisDir->createDirectory(adr);
+				break;
+			case 1:
+				cin >> adr;
+				thisDir->createFile(adr);
+				break;
+			case 2:
+				root->printWholeDirectory();
+				break;
+			case 3:
+				cin >> adr;
+				if (isProtectedNow == false)
+				{
+					(thisDir->returnFile(adr))->chmod(true);
+					isProtectedNow = true;
+				}
+				else{
+					(thisDir->returnFile(adr))->chmod(false);
+					isProtectedNow = false;
+				}
+				break;
+			case 4:
+				cin >> adr;
+				deleteWithAddres(root, adr);
+				break;
+			case 5:
+				cin >> adr;
+				thisDir->deleteDirectory(adr);
+				break;
+			case 6:
+				cin >> adr;
+				thisDir->deleteFile(adr, true);
+				break;
+			case 7:
+				cin >> adr;
+				thisDir = thisDir->goToDir(adr);
+				break;
+			case 8:
+				thisDir->printDirectory();
+				break;
+			case 9:
+				thisDir->printWholeDirectory();
+				break;
+			case 10:
+				cin >> adr;
+				(thisDir->returnFile(adr))->opCl(true);
+				break;
+			case 11:
+				cin >> adr;
+				(thisDir->returnFile(adr))->opCl(false);
+				break;
+			case 12:
+				cin >> name;
+				cin >> adr;
+				(thisDir->returnFile(name))->writeInFile(adr);
+				break;
+			case 13:
+				cin >> adr;
+				(thisDir->returnFile(adr))->cleanFile();
+				break;
+			case 14:
+				cin >> adr;
+				(thisDir->returnFile(adr))->printFile();
+				break;
+			case 15:
+				system("cls");
+				break;
+			case 16:
+				cin >> adr;
+				if (thisDir->ifFileInDirectory(adr) != true)
+					cout << "this file doesn't exist in this directory" << endl;
+				else
+					cout << "there is your file in this directory" << endl;
+				break;
+			case 17:
+				cin >> adr;
+				findFile(adr, root, "");
+				break;
+			case 18:
+				thisDir = root;
+				break;
+			case 19:
+				for (int i = 0; i < 256; i++)
+				{
+					root->deleteDirectory(root->objName(i, 1));
+					root->deleteFile(root->objName(i, 0), true);
+				}
+				delete root;
+				return 0;
+				break;
+			default:
+				cerr << endl << "wrong command" << endl;
+				break;
 			}
-			else{
-				(thisDir->returnFile(adr))->chmod(false);
-				isProtectedNow = false;
+		}
+		catch (const Name& err)
+		{
+			switch (err.errType())
+			{
+			case 'f':
+				cerr << "File with the same name already exists in this diretory." << endl;
+				break;
+			case 'd':
+				cerr << "Directory with the same name already exists in this diretory." << endl;
+				break;
+			case 'n':
+				cerr << "no dir with such name in this directory" << endl;
+				break;
 			}
 		}
-		else
-		if (command == "rm") //удаление по адресу
+		catch (const FileWork& err)
 		{
-			cin >> adr;
-			deleteWithAddres(root, adr);
-		}
-		else
-		if (command == "rm_r") //удаление директории со всем содержимым, внутри текущей директории
-		{
-			cin >> adr;
-			thisDir->deleteDirectory(adr);
-		}
-		else
-		if (command == "su_rm") //удаление файла несмотря на администраторские права
-		{
-			cin >> adr;
-			thisDir->deleteFile(adr, true);
-		}
-		else
-		if (command == "cd") //перемещение вниз по дереву
-		{
-			cin >> adr;
-			thisDir = thisDir->goToDir(adr);
-		}
-		else
-		if (command == "pwd") //показать текущую директорию
-		{
-			thisDir->printDirectory();
-		}
-		else
-		if (command == "list")
-		{
-			thisDir->printWholeDirectory();
-		}
-		else
-		if (command == "open")
-		{
-			cin >> adr;
-			(thisDir->returnFile(adr))->opCl(true);
-		}
-		else
-		if (command == "close")
-		{
-			cin >> adr;
-			(thisDir->returnFile(adr))->opCl(false);
-		}
-		else
-		if (command == "write")
-		{
-			string name;
-			cin >> name;
-			cin >> adr;
-			(thisDir->returnFile(name))->writeInFile(adr);
-		}
-		else
-		if (command == "clfile")
-		{
-			cin >> adr;
-			(thisDir->returnFile(adr))->cleanFile();
-		}
-		else
-		if (command == "read")
-		{
-			cin >> adr;
-			(thisDir->returnFile(adr))->printFile();
-		}
-		else
-		if (command == "clc")
-		{
-			system("cls");
-		}
-		else
-		if (command == "find") //ищем файл в текущей директории
-		{
-			cin >> adr;
-			if (thisDir->ifFileInDirectory(adr) != true)
-				cout << "this file doesn't exist in this directory" << endl;
-			else
-				cout << "there is your file in this directory" << endl;
-		}
-		else
-		if (command == "find_r") //ищем файла во всем дереве
-		{
-			cin >> adr;
-			findFile(adr, root, "");
-		}
-		else
-		if (command == "root")
-		{
-			thisDir = root;
+			switch (err.errType())
+			{
+			case 'd':
+				cerr << "for deleting this file, you should have administration rights" << endl;
+				break;
+			case 'o':
+				cerr << "This directory is ful. There's no place for a new directory." << endl;
+				break;
+			case 'O':
+				cerr << "This directory is ful. There's no place for a new file." << endl;
+				break;
+			case 'p':
+				cerr << "can't delete this file, cause it's still opened" << endl;
+				break;
+			case 'n':
+				cerr << "no file with such name in this directory" << endl;
+				break;
+			}
 		}
 	}
 	return 0;
