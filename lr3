@@ -10,31 +10,35 @@ class Vector2D
 protected:
 	int x, y;
 public:
-	Vector2D(int x_v, int y_v) : x(x_v), y(y_v) //конструктор 2D со списком инициализаторов
+	Vector2D(int x_v, int y_v) : x(x_v), y(y_v)
 	{
+		// конструктор 2D со списком инициализаторов
 		cerr << "ctor 2D" << endl;
 	}
 
 	virtual void printInfo(); //виртуальная функция
 
-	double length() //невиртуальная функция
-	{
+	double length()
+	{	
+		// невиртуальная функция
 		cout << "nonvirtual func from Vector2D (base class)" << endl;
 		double len = pow((double)x*x + (double)y*y, 0.5);
 		cout << len << endl;
 		return len;
 	}
 
-	Vector2D operator + (const Vector2D& v1) //переопреление оператора +: будет возвращаться вектор с координатами, которые получаются суммой соотв. координат складываемых векторов
+	Vector2D operator + (const Vector2D& v1) 
 	{
+		//переопреление оператора +: будет возвращаться вектор с координатами, которые получаются суммой соотв. координат складываемых векторов
 		Vector2D vSumm = v1;
 		vSumm.x = x + v1.x;
 		vSumm.y = y + v1.y;
 		return vSumm;
 	}
 
-	Vector2D operator - (const Vector2D& v1) //переопреление оператора -: будет возвращаться вектор с координатами, которые получаются разностью соотв. координат складываемых векторов
+	Vector2D operator - (const Vector2D& v1)
 	{
+		//переопреление оператора -: будет возвращаться вектор с координатами, которые получаются разностью соотв. координат складываемых векторов
 		Vector2D vDiff = v1;
 		vDiff.x = x - v1.x;
 		vDiff.y = y - v1.y;
